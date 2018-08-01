@@ -1,22 +1,25 @@
+
+
+
+
 type coordinate = int*int
 
 type enemy = int*coordinate
 
 type tile =
-| Path(coordinate)
-| Floor(coordinate)
-| Enemy(int,coordinate)
-| TowerFirst(coordinate) 
+| Path of coordinate
+| Floor of coordinate
+| Enemy of int*coordinate
+| TowerFirst of coordinate
+| Nothing of coordinate
 
 type level = 
-  { path: coordinate list;
+  { path: tile list;
     path_start: coordinate;
     path_end: coordinate;
     lives: int;
-    enemy_list: enemy list;
-    tower_first: coordinate list;
-    tower_strong: coordinate list;
-    tower_line: coordinate list;
+    enemy_list: tile list;
+    tower_first: tile list;
     }
 
 type direction = North | South | East | West
@@ -28,36 +31,42 @@ match d with
 | East -> (x+1,y)
 | West -> (x-1,y)
 
-let is_free_path (c:coordinate) (lev:level) =
-List.mem c lev.path
+let is_free_path (c:tile) (lev:level) = List.mem c lev.path
 
-let tile_list = [Path(0,0); Path(0,1); Path(0,2)]
+let tile_to_string t =
+match t with
+| Enemy (1,(x,y)) -> "1"
+| Path(x,y) -> "="
+| Floor(x,y) -> "x"
+| TowerFirst(x,y) -> "T"
+| Nothing(x,y) -> "\n"
+| _ -> failwith "expected tile"
 
-let tile_to_string l =
+let rec list_to_string_helper l =
 match l with
-| Path -> '='
-| Floor -> 'x'
-| Enemy -> '1'
-| TowerFirst -> 'T'
-| Nothing -> '\n'
+| [] -> []
+| head::tail -> (tile_to_string head)::(list_to_string_helper tail) 
 
-let rec list_to_string l =
-match l with
-| [] -> 
-| head::tail -> tile_to_string head :: list_to_string tail 
+(*
+let tile_list_to_string l =
+String.concat " " (list_to_string_helper l)
+
+print_string (tile_list_to_string tile_list)
+*)
 
 
 (*entire grid 12X12*)
 let level_1 =
-{ path = ([(0,0),(0,1),(0,2),(1,2),(2,2)]);
+{ path = [Path(0,0); Path(0,1); Path(0,2); Path(1,2); Path(2,2)];
   path_start = (0,0);
   path_end = (2,2);
   lives = 100;
-  enemy_list = [enemy:e];
-  tower_first = [];
-  tower_strong = [];
-  tower_lines = []
+  enemy_list = [];
+  tower_first = []
 }
+
+
+
 
 (*
 
