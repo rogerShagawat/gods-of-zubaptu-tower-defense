@@ -84,16 +84,17 @@ let distance_t x1 y1 t =
   |TowerFirst (x2,y2)-> 
     truncate (floor(sqrt (((float_of_int(x1)-.float_of_int(x2))**2.0)+.((float_of_int(y1)-.float_of_int(y2))**2.0))))
 
-(*
+
 
 let rec enemies_in_range tower enemy_c_l path range= 
   match enemy_c_l with
   | [] -> []
   | Path(x,y)::tail -> 
-    if distance (x y tower) <= range
-    then Path(x,y)::enemies_in_range tower tail path range
+    if distance_t x y tower <= range
+    then (Path(x,y))::enemies_in_range tower tail path range
+    else enemies_in_range tower tail path range
 
-*)
+
 
 (*
 let tile_list_to_string l =
@@ -107,6 +108,6 @@ print_string (tile_list_to_string tile_list)
 let level_1 =
 { path = [Path(0,0); Path(0,1); Path(0,2); Path(1,2); Path(2,2); Path(3,2); Path(4,2); Path(4,1); Path(4,0)];
   lives = 100;
-  enemy_list = [Enemy(3,(1)); Enemy(3,(2)); Enemy(9,(3))];
+  enemy_list = [Enemy(3,(1)); Enemy(3,(2)); Enemy(9,(3)); Enemy(9,(4)); Enemy(9,(5)); Enemy(9,(6)); Enemy(9,(7))];
   tower_first = [TowerFirst (1,0); TowerFirst (2,0)]
 }
