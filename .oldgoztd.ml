@@ -77,22 +77,10 @@ match l with
 let loosing_state (lev:level) =
 lev.lives <= 0
 
-(*takes level data outputs list with enemies where they are?*)
-let construct_path (lev:level) =
-  el=lev.enemy_list
-  pl=lev.path
-  match pl with
-  | [] -> []
-  | Path(x,y)::tail -> (construct_path_enemies el ) :: 
-
-let rec construct_path_enemies (el:tile list) =
-  match el with
-  | [] ->
-  | Enemy(h,p)::tail when p>-> Enemy(h,p)
-
 let construct_level (lev:level) =
 print_string ("Towers:" ^(string_of_int (List.length (lev.tower_first)))^"\nLives: "
-^string_of_int lev.lives^"\n"^String.concat " " (list_to_string_helper level_1.path))
+^string_of_int lev.lives^"\n"^String.concat " " (list_to_string_helper level_1.path));
+print_newline ()
 
 let apply_update_level (lev:level) = {
     path =        [Path(0,0);Path(1,0);Path(2,0);Path(3,0);Path(4,0);Path(5,0);Path(6,0);Path(7,0);Path(8,0);Path(9,0)];
@@ -103,12 +91,8 @@ let apply_update_level (lev:level) = {
     tower_first = [];
 }
 
-
-
-
 let rec main_loop (lev:level) = 
   if loosing_state lev
     then print_string "YOU LOOSE"
   else 
-    let lev = 
     construct_level lev
