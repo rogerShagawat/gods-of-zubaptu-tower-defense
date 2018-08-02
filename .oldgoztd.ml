@@ -49,11 +49,6 @@ match t with
 | Nothing(_,_) -> "\n"
 | _ -> failwith "expected tile"
 
-let rec list_to_string_helper l =
-match l with
-| [] -> []
-| head::tail -> (tile_to_string head)::(list_to_string_helper tail) 
-
 let rec lives_lost enemy_lst path =
   match enemy_lst with
   | [] -> 0
@@ -96,43 +91,80 @@ let level_1 ={
     path_start =  (0,0);
     path_end =    (0,0);
     lives =       100;
-    enemy_list =  [Enemy(1,1);Enemy(0,1);Enemy(2,2);Enemy(-1,1)];
+    enemy_list =  [];
     tower_first = [];
-    wave = [2;2;2;2;2;2]
+    wave = [1;2;3;4;5;6]
     }
 
 let move_enemies enemy_list =
   List.map (fun (Enemy(h,l)) -> (Enemy(h,(l+1)))) enemy_list
 
+let spawn_enemy (w:int list) =
+  match w with
+  | [] -> []
+  | head::tail -> [Enemy(head,0)]
+
+let remove_first l =
+match l with
+| []->[]
+| head::tail -> tail
+
 let rec remove_dead_enemy (l:tile list) =
 match l with
 | [] -> []
 | Enemy(h,p)::tail -> 
-  if h <= 0
+  if h <= 0 || p>10
     then remove_dead_enemy tail
   else Enemy(h,p) :: remove_dead_enemy tail
+
+(*          Graphics          *)
+(*----------------------------*)
+
+let rec list_to_string l =
+match l with
+| [] -> []
+| head::tail -> (tile_to_string head)::(list_to_string tail) 
+
+let rec construct_path_helper (n:int) =
+match n with
+| 0 -> []
+| _ -> (Path(0,0))::construct_path_helper (n-1)
+
+let construct_path (el:tile list) (pl:tile list) = 
+el @ (construct_path_helper ((List.length pl) - (List.length el)))
+
+let construct_level (lev:level) =
+print_string ("Towers:" ^(string_of_int (List.length (lev.tower_first)))^"\nLives: "
+^string_of_int lev.lives^"\n"^String.concat " " (list_to_string (construct_path (lev.enemy_list) (lev.path))));
+print_newline ()
+
+(*           Update, states, and lists          *)
+(*----------------------------------------------*)
+
+let apply_update_level (lev:level) = {
+    path =        lev.path;
+    path_start =  lev.path_start;
+    path_end =    lev.path_end;
+    lives =       lev.lives - (lives_lost lev.enemy_list lev.path);
+    enemy_list =  (move_enemies (remove_dead_enemy lev.enemy_list)) @ spawn_enemy lev.wave;
+    tower_first = lev.tower_first;
+    wave = remove_first lev.wave;
+}
 
 let loosing_state (lev:level) =
 lev.lives <= 0
 
-let construct_level (lev:level) =
-print_string ("Towers:" ^(string_of_int (List.length (lev.tower_first)))^"\nLives: "
-^string_of_int lev.lives^"\n"^String.concat " " (list_to_string_helper level_1.path));
-print_newline ()
-
-let apply_update_level (lev:level) = {
-    path =        [Path(0,0);Path(1,0);Path(2,0);Path(3,0);Path(4,0);Path(5,0);Path(6,0);Path(7,0);Path(8,0);Path(9,0)];
-    path_start =  (0,0);
-    path_end =    (9,0);
-    lives =       100;
-    enemy_list =  move_enemies lev.enemy_list;
-    tower_first = [];
-    wave = [];
-}
+let winning_state (lev:level) =
+(((List.length lev.wave) <=0) && ((List.length lev.enemy_list) <=0))
 
 let rec main_loop (lev:level) = 
+  Unix.sleepf(0.5);
   if loosing_state lev
-    then print_string "YOU LOOSE"
-  else 
-    let lev = apply_update_level
-    construct_level lev
+    then print_string ("YOU LOOSE"^(string_of_int lev.lives))
+  else if winning_state lev
+    then print_string ("YOU WIN!!!" ^(string_of_int lev.lives))
+  else
+    let lev = apply_update_level lev
+    in construct_level lev;
+    main_loop lev;
+  
